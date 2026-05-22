@@ -16,7 +16,7 @@ export const colors = {
     navbarSolid: "#ffffff",
     tabBar: "rgba(255,255,255,0.15)",
     tabBarBorder: "rgba(255,255,255,0.2)",
-    tabIconInactive: "rgba(255,255,255,0.5)",
+    tabIconInactive: "rgba(10,26,68,0.55)",
     tabIconActiveGlow: "rgba(13,148,136,0.2)",
   },
 

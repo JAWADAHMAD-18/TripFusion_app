@@ -29,6 +29,22 @@ export function useStaggerAnimation(index: number) {
   return useFadeUpAnimation(index * STAGGER_STEP_MS);
 }
 
+export function useFadeInAnimation(delay = 0, duration = FADE_DURATION) {
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration, delay });
+  }, [delay, duration, opacity]);
+
+  return useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+}
+
+export function useCardPressAnimation() {
+  return buttonPressAnimation();
+}
+
 export function buttonPressAnimation() {
   const scale = useSharedValue(1);
 

@@ -6,3 +6,8 @@ export const FEATURED_CARD_HEIGHT = 300;
 export const FEATURED_CARD_OVERLAY_HEIGHT = 160;
 export const PACKAGE_PLACEHOLDER_IMAGE_URI =
   'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400';
+
+export const PACKAGE_DETAIL_HERO_HEIGHT = 420;
+export const PACKAGE_DETAIL_BOOK_BAR_HEIGHT = 80;
+export const PACKAGE_GALLERY_IMAGE_WIDTH = 140;
+export const PACKAGE_GALLERY_IMAGE_HEIGHT = 100;
