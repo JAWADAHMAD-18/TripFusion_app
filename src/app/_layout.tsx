@@ -1,4 +1,4 @@
-import { Slot, useRouter } from 'expo-router';
+import { Redirect, Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import {
   ActivityIndicator,
@@ -17,9 +17,21 @@ import {
 } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 
+const PUBLIC_AUTH_SEGMENTS = new Set(['login', 'register']);
+
+function isPublicAuthRoute(segments: string[]): boolean {
+  return segments[0] === '(auth)' && PUBLIC_AUTH_SEGMENTS.has(segments[1] ?? '');
+}
+
+function isAuthGroupRoute(segments: string[]): boolean {
+  return segments[0] === '(auth)';
+}
+
 export default function RootLayout() {
   const router = useRouter();
+  const segments = useSegments();
   const isLoading = useAuthStore((state) => state.isLoading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
 
   useEffect(() => {
@@ -33,6 +45,26 @@ export default function RootLayout() {
           <ActivityIndicator size="large" color={colors.accent.teal} />
           <Text style={styles.title}>TripFusion</Text>
         </View>
+      </GestureHandlerRootView>
+    );
+  }
+
+  const segmentList = segments as string[];
+  const onPublicRoute = isPublicAuthRoute(segmentList);
+  const onAuthRoute = isAuthGroupRoute(segmentList);
+
+  if (!isAuthenticated && !onPublicRoute) {
+    return (
+      <GestureHandlerRootView style={styles.root}>
+        <Redirect href="/(auth)/login" />
+      </GestureHandlerRootView>
+    );
+  }
+
+  if (isAuthenticated && onAuthRoute) {
+    return (
+      <GestureHandlerRootView style={styles.root}>
+        <Redirect href="/(tabs)/" />
       </GestureHandlerRootView>
     );
   }
@@ -69,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.default,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    gap: spacing.lg,
   },
   title: {
     color: colors.primary,

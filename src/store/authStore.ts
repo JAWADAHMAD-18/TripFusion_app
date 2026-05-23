@@ -1,21 +1,23 @@
 import { create } from 'zustand';
 
-import { TOKEN_KEY, USER_KEY } from '@/constants/config';
+import type { User } from '@/services/authService';
 import {
-  clearAll,
-  getToken,
+  clearAuth,
+  getAccessToken,
   getUser,
-  saveToken,
+  isTokenExpired,
+  saveAccessToken,
   saveUser,
 } from '@/utils/storage';
 
 type AuthState = {
-  user: object | null;
+  user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  setAuth: (user: object, token: string) => Promise<void>;
-  logout: () => Promise<void>;
+  setAuth: (user: User, accessToken: string) => Promise<void>;
+  logout: () => void;
   setLoading: (loading: boolean) => void;
   loadFromStorage: () => Promise<void>;
 };
@@ -24,17 +26,29 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isAdmin: false,
   isLoading: false,
 
-  setAuth: async (user, token) => {
-    await saveToken(token);
+  setAuth: async (user, accessToken) => {
+    await saveAccessToken(accessToken);
     await saveUser(user);
-    set({ user, token, isAuthenticated: true });
+    set({
+      user,
+      token: accessToken,
+      isAuthenticated: true,
+      isAdmin: user.isAdmin,
+    });
   },
 
-  logout: async () => {
-    await clearAll();
-    set({ user: null, token: null, isAuthenticated: false });
+  logout: () => {
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+    void clearAuth();
+    void import('@/services/authService').then((module) => module.logout());
   },
 
   setLoading: (isLoading) => set({ isLoading }),
@@ -42,13 +56,43 @@ export const useAuthStore = create<AuthState>((set) => ({
   loadFromStorage: async () => {
     set({ isLoading: true });
     try {
-      const [token, user] = await Promise.all([
-        getToken(),
+      const [token, storedUser] = await Promise.all([
+        getAccessToken(),
         getUser(),
       ]);
-      if (token && user) {
-        set({ token, user, isAuthenticated: true });
+
+      if (!token) {
+        set({ isAuthenticated: false });
+        return;
       }
+
+      if (isTokenExpired(token)) {
+        await clearAuth();
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isAdmin: false,
+        });
+        return;
+      }
+
+      if (storedUser) {
+        const user = storedUser as User;
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          isAdmin: user.isAdmin ?? false,
+        });
+        return;
+      }
+
+      set({
+        token,
+        isAuthenticated: true,
+        isAdmin: false,
+      });
     } finally {
       set({ isLoading: false });
     }

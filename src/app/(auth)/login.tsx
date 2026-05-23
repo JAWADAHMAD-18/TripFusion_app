@@ -14,7 +14,6 @@ import {
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { isAxiosError } from 'axios';
 
 import { AUTH_HEADER_PADDING_TOP } from '@/constants/auth';
 import {
@@ -25,76 +24,43 @@ import {
   spacing,
 } from '@/constants/theme';
 import { AuthScreenBackground } from '@/components/auth-screen-background';
-import api from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
-import { buttonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
+import { useButtonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
 
 const BUTTON_HEIGHT = spacing.xxxl + spacing.xl;
 
-type LoginResponse = {
-  user?: object;
-  token?: string;
-  data?: {
-    user?: object;
-    token?: string;
-  };
-  message?: string;
-};
-
-function getLoginErrorMessage(err: unknown): string {
-  if (isAxiosError(err)) {
-    const data = err.response?.data as { message?: string; error?: string } | undefined;
-    return data?.message ?? data?.error ?? 'Login failed. Try again.';
-  }
-  return 'Login failed. Try again.';
-}
-
 export default function LoginScreen() {
-  const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
   const animatedStyle = useFadeUpAnimation();
-  const { animatedStyle: buttonAnimatedStyle, onPressIn, onPressOut } =
-    buttonPressAnimation();
+  const { animatedStyle: buttonStyle, onPressIn, onPressOut } =
+    useButtonPressAnimation();
+  useAuthStore((state) => state.isAuthenticated);
+  const { login, isLoading } = useAuth();
+  const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onLogin = async () => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
+    const trimmedEmail = (email ?? '').trim();
+    if ((trimmedEmail?.length ?? 0) === 0 || (password?.length ?? 0) === 0) {
       setError('Please enter your email and password.');
       return;
     }
 
     setError(null);
-    setIsLoading(true);
 
-    try {
-      const { data } = await api.post<LoginResponse>('/auth/login', {
-        email: trimmedEmail,
-        password,
-      });
-
-      const user = data.user ?? data.data?.user;
-      const token = data.token ?? data.data?.token;
-
-      if (!user || !token) {
-        setError('Login failed. Try again.');
-        return;
-      }
-
-      await setAuth(user, token);
+    const result = await login(trimmedEmail, password);
+    if (result.success) {
       router.replace('/(tabs)/');
-    } catch (err) {
-      setError(getLoginErrorMessage(err));
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    setError(result.error ?? 'Login failed. Try again.');
   };
 
   const onGooglePress = () => {
@@ -103,16 +69,17 @@ export default function LoginScreen() {
 
   return (
     <AuthScreenBackground>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <Animated.View style={[styles.screenAnimated, animatedStyle]}>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Animated.View style={[styles.animatedContent, animatedStyle]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.animatedContent}>
             <View style={styles.header}>
               <Text style={styles.logoEmoji}>✈️</Text>
               <Text style={styles.brandTitle}>TripFusion</Text>
@@ -175,7 +142,7 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              <Animated.View style={buttonAnimatedStyle}>
+              <Animated.View style={buttonStyle}>
                 <Pressable
                   onPress={onLogin}
                   onPressIn={onPressIn}
@@ -225,14 +192,18 @@ export default function LoginScreen() {
                 <Text style={styles.footerLink}>Register</Text>
               </Pressable>
             </View>
-          </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Animated.View>
     </AuthScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  screenAnimated: {
+    flex: 1,
+  },
   keyboardView: {
     flex: 1,
   },

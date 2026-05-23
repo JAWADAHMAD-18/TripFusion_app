@@ -14,7 +14,6 @@ import {
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { isAxiosError } from 'axios';
 
 import { AuthScreenBackground } from '@/components/auth-screen-background';
 import { AUTH_HEADER_PADDING_TOP } from '@/constants/auth';
@@ -25,30 +24,11 @@ import {
   gradients,
   spacing,
 } from '@/constants/theme';
-import api from '@/services/api';
-import { useAuthStore } from '@/store/authStore';
-import { buttonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
+import { useAuth } from '@/hooks/useAuth';
+import { useButtonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
 
 const BUTTON_HEIGHT = spacing.xxxl + spacing.xl;
 const MIN_PASSWORD_LENGTH = 6;
-
-type RegisterResponse = {
-  user?: object;
-  token?: string;
-  data?: {
-    user?: object;
-    token?: string;
-  };
-  message?: string;
-};
-
-function getRegisterErrorMessage(err: unknown): string {
-  if (isAxiosError(err)) {
-    const data = err.response?.data as { message?: string; error?: string } | undefined;
-    return data?.message ?? data?.error ?? 'Registration failed. Try again.';
-  }
-  return 'Registration failed. Try again.';
-}
 
 function validateRegisterForm(
   name: string,
@@ -82,10 +62,10 @@ function validateRegisterForm(
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const { register, isLoading } = useAuth();
   const animatedStyle = useFadeUpAnimation();
   const { animatedStyle: buttonAnimatedStyle, onPressIn, onPressOut } =
-    buttonPressAnimation();
+    useButtonPressAnimation();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -97,7 +77,6 @@ export default function RegisterScreen() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [confirmFocused, setConfirmFocused] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onRegister = async () => {
@@ -113,30 +92,14 @@ export default function RegisterScreen() {
     }
 
     setError(null);
-    setIsLoading(true);
 
-    try {
-      const { data } = await api.post<RegisterResponse>('/auth/register', {
-        name: name.trim(),
-        email: email.trim(),
-        password,
-      });
-
-      const user = data.user ?? data.data?.user;
-      const token = data.token ?? data.data?.token;
-
-      if (!user || !token) {
-        setError('Registration failed. Try again.');
-        return;
-      }
-
-      await setAuth(user, token);
+    const result = await register(name.trim(), email.trim(), password);
+    if (result.success) {
       router.replace('/(tabs)/');
-    } catch (err) {
-      setError(getRegisterErrorMessage(err));
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    setError(result.error);
   };
 
   return (

@@ -81,7 +81,7 @@ export default function PackageDetailScreen() {
 
   const onBookNow = () => {
     if (!packageDetail.bookable) return;
-    router.push(`/booking/${packageDetail.id}`);
+    router.push(`/booking/create/${packageDetail.id}`);
   };
 
   return (

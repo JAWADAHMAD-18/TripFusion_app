@@ -7,7 +7,7 @@ import type {
   BookingResult,
   CreateBookingInput,
 } from '@/types/booking';
-import api from '@/services/api';
+import { multipartApi } from '@/services/api';
 
 type ApiRecord = Record<string, unknown>;
 
@@ -97,11 +97,7 @@ export async function createBooking(
     type: input.paymentProofImage.mimeType,
   } as unknown as Blob);
 
-  const { data } = await api.post('/bookings', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const { data } = await multipartApi.post('/bookings', formData);
 
   return normalizeBookingResult(data);
 }

@@ -252,8 +252,12 @@ export default function HomeScreen() {
         ]);
         if (!cancelled) {
           setFeaturedPackages(extractPackagesList(featuredRes.data));
-          const total = extractPackagesTotal(countRes.data);
-          setPackagesCount(total != null ? String(total) : "0");
+          const countData = countRes.data?.data as
+            | { total?: number; packages?: unknown[] }
+            | undefined;
+          const total =
+            countData?.total ?? countData?.packages?.length ?? 0;
+          setPackagesCount(String(total));
         }
       } catch {
         if (!cancelled) {
@@ -279,11 +283,13 @@ export default function HomeScreen() {
     const fetchRecentBookings = async () => {
       setIsLoadingBookings(true);
       try {
-        const { data } = await api.get("/bookings/my");
+        const { data } = await api.get("/bookings/me");
         if (!cancelled) {
-          const bookings = extractBookingsList(data);
+          const bookings = Array.isArray(data?.data)
+            ? (data.data as Booking[])
+            : extractBookingsList(data);
           setRecentBookings(bookings.slice(0, 2));
-          setBookingsCount(String(bookings.length));
+          setBookingsCount(String(data?.data?.length ?? bookings.length ?? 0));
         }
       } catch {
         if (!cancelled) {

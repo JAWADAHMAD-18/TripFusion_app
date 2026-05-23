@@ -30,7 +30,7 @@ import {
   spacing,
 } from '@/constants/theme';
 import { useBooking } from '@/hooks/use-booking';
-import { buttonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
+import { useButtonPressAnimation, useFadeUpAnimation } from '@/utils/animations';
 
 function resolvePackageId(
   packageId: string | string[] | undefined,
@@ -78,7 +78,7 @@ export default function BookingScreen() {
   const messageStyle = useFadeUpAnimation(240);
   const paymentStyle = useFadeUpAnimation(320);
   const { animatedStyle: buttonPressStyle, onPressIn, onPressOut } =
-    buttonPressAnimation();
+    useButtonPressAnimation();
 
   if (isLoadingPackage) {
     return <BookingSkeleton />;

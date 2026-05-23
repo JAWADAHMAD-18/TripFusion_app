@@ -12,7 +12,7 @@ import {
   shadows,
   spacing,
 } from '@/constants/theme';
-import { buttonPressAnimation, useFadeInAnimation } from '@/utils/animations';
+import { useButtonPressAnimation, useFadeInAnimation } from '@/utils/animations';
 
 type PackageDetailBookBarProps = {
   priceLabel: string;
@@ -32,7 +32,7 @@ export function PackageDetailBookBar({
   const insets = useSafeAreaInsets();
   const fadeStyle = useFadeInAnimation(visible ? 200 : 0, 350);
   const { animatedStyle: pressStyle, onPressIn, onPressOut } =
-    buttonPressAnimation();
+    useButtonPressAnimation();
 
   if (!visible) {
     return null;

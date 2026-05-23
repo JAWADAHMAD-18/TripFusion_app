@@ -1,64 +1,73 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 import {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 const FADE_DURATION = 400;
-const FADE_OFFSET_Y = 20;
-const STAGGER_STEP_MS = 80;
 
-export function useFadeUpAnimation(delay = 0) {
+export function useFadeUpAnimation(_delay = 0) {
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(FADE_OFFSET_Y);
-
-  useEffect(() => {
-    opacity.value = withTiming(1, { duration: FADE_DURATION, delay });
-    translateY.value = withTiming(0, { duration: FADE_DURATION, delay });
-  }, [delay, opacity, translateY]);
-
-  return useAnimatedStyle(() => ({
+  const translateY = useSharedValue(20);
+  const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: FADE_DURATION });
+    translateY.value = withTiming(0, { duration: FADE_DURATION });
+  }, []);
+  return animatedStyle;
 }
 
 export function useStaggerAnimation(index: number) {
-  return useFadeUpAnimation(index * STAGGER_STEP_MS);
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(20);
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      opacity.value = withTiming(1, { duration: FADE_DURATION });
+      translateY.value = withTiming(0, { duration: FADE_DURATION });
+    }, index * 80);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+  return animatedStyle;
 }
 
 export function useFadeInAnimation(delay = 0, duration = FADE_DURATION) {
   const opacity = useSharedValue(0);
-
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
   useEffect(() => {
     opacity.value = withTiming(1, { duration, delay });
   }, [delay, duration, opacity]);
-
-  return useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+  return animatedStyle;
 }
 
 export function useCardPressAnimation() {
-  return buttonPressAnimation();
+  return useButtonPressAnimation();
 }
 
-export function buttonPressAnimation() {
+export function useButtonPressAnimation() {
   const scale = useSharedValue(1);
-
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
-
   const onPressIn = () => {
     scale.value = withSpring(0.96);
   };
-
   const onPressOut = () => {
     scale.value = withSpring(1);
   };
-
   return { animatedStyle, onPressIn, onPressOut };
 }
+
+/** @deprecated Use useButtonPressAnimation instead */
+export const buttonPressAnimation = useButtonPressAnimation;
