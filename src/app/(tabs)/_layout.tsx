@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -9,6 +9,7 @@ import {
   shadows,
   spacing,
 } from '@/constants/theme';
+import { FloatingChatButton } from '@/components/chat/FloatingChatButton';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -50,81 +51,89 @@ function TabIcon({
 }
 
 export default function TabsLayout() {
+  const router = useRouter();
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: colors.accent.teal,
-        tabBarInactiveTintColor: colors.surface.tabIconInactive,
-        tabBarBackground: () => <TabBarBackground />,
-        tabBarStyle: styles.tabBar,
-        tabBarItemStyle: styles.tabBarItem,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              activeIcon="home"
-              inactiveIcon="home-outline"
-            />
-          ),
+    <View style={styles.container}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: colors.accent.teal,
+          tabBarInactiveTintColor: colors.surface.tabIconInactive,
+          tabBarBackground: () => <TabBarBackground />,
+          tabBarStyle: styles.tabBar,
+          tabBarItemStyle: styles.tabBarItem,
         }}
-      />
-      <Tabs.Screen
-        name="packages"
-        options={{
-          title: 'Packages',
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              activeIcon="grid"
-              inactiveIcon="grid-outline"
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="bookings"
-        options={{
-          title: 'Bookings',
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              activeIcon="calendar"
-              inactiveIcon="calendar-outline"
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon
-              focused={focused}
-              color={color}
-              activeIcon="person"
-              inactiveIcon="person-outline"
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="home"
+                inactiveIcon="home-outline"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="packages"
+          options={{
+            title: 'Packages',
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="grid"
+                inactiveIcon="grid-outline"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="bookings"
+          options={{
+            title: 'Bookings',
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="calendar"
+                inactiveIcon="calendar-outline"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="person"
+                inactiveIcon="person-outline"
+              />
+            ),
+          }}
+        />
+      </Tabs>
+      <FloatingChatButton onPress={() => router.push('/chat')} />
+    </View>
   );
 }
 
 const TAB_BAR_HEIGHT = spacing.xxxl * 2;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   tabBar: {
     position: 'absolute',
     bottom: spacing.xxl,
@@ -148,3 +157,4 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
 });
+
