@@ -69,6 +69,16 @@ export default function LoginScreen() {
 
   return (
     <AuthScreenBackground>
+      {router.canGoBack() && (
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="chevron-back" size={22} color="white" />
+        </Pressable>
+      )}
       <Animated.View style={[styles.screenAnimated, animatedStyle]}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
@@ -203,6 +213,18 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   screenAnimated: {
     flex: 1,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 52,
+    left: spacing.xl,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   keyboardView: {
     flex: 1,

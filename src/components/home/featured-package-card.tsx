@@ -60,7 +60,13 @@ export function FeaturedPackageCard({
         onPress={() => router.push(`/package/${packageItem._id}`)}
         style={styles.card}
       >
-        <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.image}
+          resizeMode="cover"
+          onError={(e) => console.log('Image error:', e.nativeEvent.error)}
+          defaultSource={{ uri: PACKAGE_PLACEHOLDER_IMAGE_URI }}
+        />
         <LinearGradient
           colors={gradients.packageCard.colors}
           start={gradients.packageCard.start}
@@ -97,7 +103,11 @@ const styles = StyleSheet.create({
     ...shadows.cardGlowTeal,
   },
   image: {
-    ...StyleSheet.absoluteFillObject,
+    width: FEATURED_CARD_WIDTH,
+    height: FEATURED_CARD_HEIGHT,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   overlay: {
     position: 'absolute',

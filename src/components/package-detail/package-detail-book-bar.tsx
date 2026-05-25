@@ -20,6 +20,8 @@ type PackageDetailBookBarProps = {
   bookable: boolean;
   availabilityLabel: string;
   onBookPress: () => void;
+  buttonText?: string;
+  useSecondaryColor?: boolean;
 };
 
 export function PackageDetailBookBar({
@@ -28,6 +30,8 @@ export function PackageDetailBookBar({
   bookable,
   availabilityLabel,
   onBookPress,
+  buttonText,
+  useSecondaryColor,
 }: PackageDetailBookBarProps) {
   const insets = useSafeAreaInsets();
   const fadeStyle = useFadeInAnimation(visible ? 200 : 0, 350);
@@ -74,20 +78,28 @@ export function PackageDetailBookBar({
             disabled={!bookable}
             style={!bookable && styles.buttonDisabledWrap}
           >
-            <LinearGradient
-              colors={
-                bookable
-                  ? gradients.tealAccent.colors
-                  : [colors.border.dark, colors.text.muted]
-              }
-              start={gradients.tealAccent.start}
-              end={gradients.tealAccent.end}
-              style={styles.button}
-            >
-              <Text style={styles.buttonText}>
-                {bookable ? 'Book Now' : 'Sold Out'}
-              </Text>
-            </LinearGradient>
+            {useSecondaryColor ? (
+              <View style={[styles.button, { backgroundColor: colors.secondary }]}>
+                <Text style={styles.buttonText}>
+                  {buttonText || (bookable ? 'Book Now' : 'Sold Out')}
+                </Text>
+              </View>
+            ) : (
+              <LinearGradient
+                colors={
+                  bookable
+                    ? gradients.tealAccent.colors
+                    : [colors.border.dark, colors.text.muted]
+                }
+                start={gradients.tealAccent.start}
+                end={gradients.tealAccent.end}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>
+                  {buttonText || (bookable ? 'Book Now' : 'Sold Out')}
+                </Text>
+              </LinearGradient>
+            )}
           </Pressable>
         </Animated.View>
       </View>

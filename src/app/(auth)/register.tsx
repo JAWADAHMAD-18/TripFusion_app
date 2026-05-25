@@ -104,6 +104,16 @@ export default function RegisterScreen() {
 
   return (
     <AuthScreenBackground>
+      {router.canGoBack() && (
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="chevron-back" size={22} color="white" />
+        </Pressable>
+      )}
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -281,6 +291,18 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  backButton: {
+    position: 'absolute',
+    top: 52,
+    left: spacing.xl,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: borderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   keyboardView: {
     flex: 1,
   },

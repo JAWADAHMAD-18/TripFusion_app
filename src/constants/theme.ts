@@ -74,6 +74,7 @@ export const fontSizes = {
   xxl: 24,
   xxxl: 30,
   display: 36,
+  jumbo: 40,
 };
 
 export const spacing = {

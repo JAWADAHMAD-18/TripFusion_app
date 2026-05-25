@@ -6,10 +6,12 @@ import { StyleSheet, View } from 'react-native';
 import {
   borderRadius,
   colors,
+  fontSizes,
   shadows,
   spacing,
 } from '@/constants/theme';
 import { FloatingChatButton } from '@/components/chat/FloatingChatButton';
+import { useAuthStore } from '@/store/authStore';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -52,24 +54,27 @@ function TabIcon({
 
 export default function TabsLayout() {
   const router = useRouter();
+  const isGuest = useAuthStore((state) => state.isGuest);
 
   return (
     <View style={styles.container}>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarShowLabel: false,
+          tabBarShowLabel: isGuest,
           tabBarActiveTintColor: colors.accent.teal,
           tabBarInactiveTintColor: colors.surface.tabIconInactive,
           tabBarBackground: () => <TabBarBackground />,
           tabBarStyle: styles.tabBar,
           tabBarItemStyle: styles.tabBarItem,
+          tabBarLabelStyle: { fontSize: fontSizes.xs },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: 'Home',
+            href: isGuest ? null : undefined,
             tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
@@ -84,6 +89,7 @@ export default function TabsLayout() {
           name="packages"
           options={{
             title: 'Packages',
+            tabBarLabel: 'Packages',
             tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
@@ -98,6 +104,7 @@ export default function TabsLayout() {
           name="bookings"
           options={{
             title: 'Bookings',
+            href: isGuest ? null : undefined,
             tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
@@ -112,12 +119,45 @@ export default function TabsLayout() {
           name="profile"
           options={{
             title: 'Profile',
+            href: isGuest ? null : undefined,
             tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
                 color={color}
                 activeIcon="person"
                 inactiveIcon="person-outline"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="about-tab"
+          options={{
+            title: 'About',
+            tabBarLabel: 'About',
+            href: isGuest ? '/about' : null,
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="information-circle"
+                inactiveIcon="information-circle-outline"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="login-tab"
+          options={{
+            title: 'Login',
+            tabBarLabel: 'Login',
+            href: isGuest ? '/(auth)/login' : null,
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon
+                focused={focused}
+                color={color}
+                activeIcon="log-in"
+                inactiveIcon="log-in-outline"
               />
             ),
           }}

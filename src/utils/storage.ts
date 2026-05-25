@@ -2,6 +2,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ACCESS_TOKEN_KEY = 'tripfusion_access_token';
 export const USER_KEY = 'tripfusion_user';
+export const ONBOARDING_KEY = 'tripfusion_onboarding_complete';
+
+export async function hasSeenOnboarding(): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+    return value === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export async function markOnboardingComplete(permanent: boolean = true): Promise<void> {
+  if (!permanent) return;
+  try {
+    await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+  } catch {
+    // storage unavailable
+  }
+}
+
 
 export async function saveAccessToken(token: string): Promise<void> {
   try {

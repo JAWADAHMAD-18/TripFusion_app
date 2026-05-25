@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -19,6 +19,7 @@ import { PackageScheduleSection } from '@/components/package-detail/package-sche
 import { PACKAGE_DETAIL_BOOK_BAR_HEIGHT } from '@/constants/home';
 import { colors, spacing } from '@/constants/theme';
 import { usePackageDetails } from '@/hooks/use-package-details';
+import { useAuthStore } from '@/store/authStore';
 import { useFadeUpAnimation } from '@/utils/animations';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -45,6 +46,9 @@ export default function PackageDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const packageId = resolvePackageId(id);
   const scrollY = useSharedValue(0);
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isGuest = useAuthStore((state) => state.isGuest);
 
   const { packageDetail, isLoading, error, refetch } =
     usePackageDetails(packageId);
@@ -79,8 +83,22 @@ export default function PackageDetailScreen() {
   const scrollBottomPadding =
     PACKAGE_DETAIL_BOOK_BAR_HEIGHT + insets.bottom + spacing.xxl;
 
+  const shouldPromptAuth = isGuest || !isAuthenticated;
+
   const onBookNow = () => {
     if (!packageDetail.bookable) return;
+    if (shouldPromptAuth) {
+      Alert.alert(
+        'Login Required',
+        'Create a free account to book this package and start your adventure!',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => router.push('/(auth)/login') },
+          { text: 'Register', onPress: () => router.push('/(auth)/register') },
+        ]
+      );
+      return;
+    }
     router.push(`/booking/create/${packageDetail.id}`);
   };
 
@@ -140,6 +158,8 @@ export default function PackageDetailScreen() {
           packageDetail.availableSlot,
         )}
         onBookPress={onBookNow}
+        buttonText={shouldPromptAuth ? 'Login to Book' : undefined}
+        useSecondaryColor={shouldPromptAuth}
       />
     </View>
   );

@@ -340,7 +340,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
-            style={[styles.linkRow, styles.linkRowLast]}
+            style={styles.linkRow}
             onPress={() => router.push('/(tabs)/packages')}
           >
             <View style={[styles.linkIcon, styles.linkIconBlue]}>
@@ -351,6 +351,25 @@ export default function ProfileScreen() {
               />
             </View>
             <Text style={styles.linkLabel}>Browse Packages</Text>
+            <Ionicons
+              name="chevron-forward"
+              color={colors.text.muted}
+              size={18}
+            />
+          </Pressable>
+
+          <Pressable
+            style={[styles.linkRow, styles.linkRowLast]}
+            onPress={() => router.push('/about')}
+          >
+            <View style={[styles.linkIcon, { backgroundColor: 'rgba(13,148,136,0.1)' }]}>
+              <Ionicons
+                name="information-circle"
+                color={colors.accent.teal}
+                size={18}
+              />
+            </View>
+            <Text style={styles.linkLabel}>About TripFusion</Text>
             <Ionicons
               name="chevron-forward"
               color={colors.text.muted}

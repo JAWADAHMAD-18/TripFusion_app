@@ -1,5 +1,5 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -14,34 +14,62 @@ import {
   spacing,
 } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
+import { hasSeenOnboarding } from '@/utils/storage';
 
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const isLoading = useAuthStore((state) => state.isLoading);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isGuest = useAuthStore((state) => state.isGuest);
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
 
+  const [hasSeenOnboardState, setHasSeenOnboardState] = useState<boolean | null>(null);
+
   useEffect(() => {
-    loadFromStorage();
+    async function init() {
+      await loadFromStorage();
+      const seen = await hasSeenOnboarding();
+      setHasSeenOnboardState(seen);
+    }
+    init();
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || hasSeenOnboardState === null) return;
 
     const currentRoute = '/' + segments.join('/');
     const publicRoutes = ['/(auth)/login', '/(auth)/register'];
     const isPublicRoute = publicRoutes.includes(currentRoute);
     const isAuthRoute = segments[0] === '(auth)';
+    const isOnboardingRoute = segments[0] === 'onboarding';
 
-    if (!isAuthenticated && !isPublicRoute) {
+    if (hasSeenOnboardState === false) {
+      if (!isOnboardingRoute) {
+        router.replace('/onboarding');
+      }
+      return;
+    }
+
+    // Onboarding complete (hasSeenOnboardState === true)
+    if (isOnboardingRoute) {
+      if (isAuthenticated || isGuest) {
+        router.replace('/(tabs)/');
+      } else {
+        router.replace('/(auth)/login');
+      }
+      return;
+    }
+
+    const isAllowed = isAuthenticated || isGuest;
+    if (!isAllowed && !isPublicRoute) {
       router.replace('/(auth)/login');
-    } else if (isAuthenticated && isAuthRoute) {
+    } else if (isAllowed && isAuthRoute) {
       router.replace('/(tabs)/');
     }
-  }, [isLoading, isAuthenticated, segments, router]);
+  }, [isLoading, hasSeenOnboardState, isAuthenticated, isGuest, segments, router]);
 
-  if (isLoading) {
+  if (isLoading || hasSeenOnboardState === null) {
     return (
       <GestureHandlerRootView style={styles.root}>
         <View style={styles.loading}>
